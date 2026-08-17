@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyGen — AI Study Assistant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="app-shell">
+
+    <header class="chat-header">
+        <div class="header-left">
+            <div class="brand-mark">S</div>
+            <div class="brand-copy">
+                <strong>StudyGen</strong>
+                <span>AI Study Assistant</span>
+            </div>
+
+            <button
+                id="addProviderTopButton"
+                class="icon-button provider-plus"
+                title="Add AI provider"
+                aria-label="Add AI provider"
+            >+</button>
+        </div>
+
+        <div class="header-center">
+            <span id="activeProviderLabel">Automatic Failover</span>
+            <span class="header-dot"></span>
+            <span id="connectionText">Connecting...</span>
+        </div>
+
+        <div class="header-right">
+            <button
+                id="newChatButton"
+                class="header-button"
+                title="New chat"
+            >
+                <span>＋</span>
+                New chat
+            </button>
+        </div>
+    </header>
+
+    <main class="chat-main" id="chatMain">
+        <section id="welcomeScreen" class="welcome-screen">
+            <div class="welcome-icon">✦</div>
+
+            <h1>What do you want to study?</h1>
+
+            <p>
+                Ask StudyGen to explain a topic, create notes,
+                build a quiz, transform study material, or learn from a PDF.
+            </p>
+
+            <div class="prompt-grid">
+                <button class="prompt-card" data-prompt="Explain Artificial Intelligence in simple exam-ready language">
+                    <span>✦</span>
+                    <div>
+                        <strong>Explain a topic</strong>
+                        <small>Get a clear, exam-ready explanation</small>
+                    </div>
+                </button>
+
+                <button class="prompt-card" data-prompt="Create concise revision notes on Machine Learning">
+                    <span>≡</span>
+                    <div>
+                        <strong>Make revision notes</strong>
+                        <small>Turn a topic into structured notes</small>
+                    </div>
+                </button>
+
+                <button class="prompt-card" data-prompt="Create a 5 question quiz on Artificial Intelligence">
+                    <span>✓</span>
+                    <div>
+                        <strong>Test me</strong>
+                        <small>Generate an interactive quiz</small>
+                    </div>
+                </button>
+
+                <button class="prompt-card" data-action="pdf">
+                    <span>↑</span>
+                    <div>
+                        <strong>Study from PDF</strong>
+                        <small>Upload your study material</small>
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <section id="chatMessages" class="chat-messages" aria-live="polite"></section>
+    </main>
+
+    <footer class="composer-area">
+
+        <div id="pdfAttachment" class="attachment-preview hidden">
+            <div class="attachment-icon">PDF</div>
+            <div class="attachment-info">
+                <strong id="pdfName">No PDF selected</strong>
+                <span id="pdfSize"></span>
+            </div>
+            <button id="removePdfButton" class="attachment-remove" title="Remove PDF">×</button>
+        </div>
+
+        <div class="composer-wrap">
+
+            <div class="composer-toolbar">
+                <button
+                    id="attachPdfButton"
+                    class="toolbar-icon"
+                    title="Upload PDF"
+                    aria-label="Upload PDF"
+                >＋</button>
+
+                <input
+                    id="pdfInput"
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    hidden
+                >
+
+                <select id="contentType" class="composer-select" title="Content type">
+                    <option value="explanation">Explanation</option>
+                    <option value="summary">Summary</option>
+                    <option value="notes">Study Notes</option>
+                    <option value="mcq">MCQ</option>
+                    <option value="flashcards">Flashcards</option>
+                    <option value="quiz">Quiz</option>
+                </select>
+
+                <select id="difficulty" class="composer-select" title="Difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+
+                <select id="questionCount" class="composer-select count-select" title="Number of questions/cards">
+                    <option value="5" selected>5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                </select>
+
+                <select id="providerSelect" class="composer-select provider-select" title="AI provider">
+                    <option value="">Automatic Failover</option>
+                </select>
+
+                <button
+                    id="providerMenuButton"
+                    class="toolbar-icon provider-inline-plus"
+                    title="Add AI provider"
+                    aria-label="Add AI provider"
+                >+</button>
+            </div>
+
+            <div class="composer-input-row">
+                <textarea
+                    id="chatInput"
+                    rows="1"
+                    placeholder="Ask anything about your studies..."
+                    autocomplete="off"
+                ></textarea>
+
+                <button
+                    id="sendButton"
+                    class="send-button"
+                    title="Send"
+                    aria-label="Send"
+                >
+                    ↑
+                </button>
+            </div>
+
+            <div class="composer-hint">
+                <span>Enter to send</span>
+                <span>•</span>
+                <span>Shift + Enter for new line</span>
+                <span class="hint-spacer"></span>
+                <span id="attachmentHint">PDF supported</span>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<!-- Provider modal -->
+<div id="providerModal" class="modal-backdrop hidden">
+    <div class="provider-modal">
+        <div class="modal-header">
+            <div>
+                <span class="eyebrow">AI PROVIDER</span>
+                <h2>Add provider</h2>
+                <p>Connect another model to StudyGen.</p>
+            </div>
+            <button id="closeProviderModal" class="modal-close">×</button>
+        </div>
+
+        <div class="provider-form">
+
+            <label>
+                Provider name
+                <input id="providerNameInput" type="text" placeholder="e.g. Gemini">
+            </label>
+
+            <label>
+                API key
+                <input id="providerApiKeyInput" type="password" placeholder="API key">
+            </label>
+
+            <label>
+                Model
+                <input id="providerModelInput" type="text" placeholder="e.g. gemini-3.6-flash">
+            </label>
+
+            <label>
+                Base URL <span class="optional">(optional)</span>
+                <input id="providerBaseUrlInput" type="text" placeholder="https://...">
+            </label>
+
+            <label>
+                Priority
+                <input id="providerPriorityInput" type="number" value="10" min="1">
+            </label>
+
+            <div class="provider-actions">
+                <button id="cancelProviderButton" class="secondary-button">Cancel</button>
+                <button id="addProviderButton" class="primary-button">Add provider</button>
+            </div>
+        </div>
+
+        <div class="provider-list-section">
+            <div class="provider-list-title">
+                <strong>Configured providers</strong>
+                <button id="refreshProvidersButton" class="small-button">Refresh</button>
+            </div>
+            <div id="providerList" class="provider-list"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden compatibility elements used by the existing StudyGen backend flow -->
+<div class="legacy-compat" aria-hidden="true">
+    <input id="generateTopic">
+    <select id="generateType"><option value="explanation">Explanation</option></select>
+    <select id="generateDifficulty"><option value="medium">Medium</option></select>
+    <select id="generateCount"><option value="10">10</option></select>
+    <select id="generateProvider"><option value="">Automatic Failover</option></select>
+    <div id="generateResult"></div>
+    <div id="generateMeta"></div>
+
+    <input id="quizTopic">
+    <select id="quizDifficulty"><option value="medium">Medium</option></select>
+    <select id="quizCount"><option value="10">10</option></select>
+    <select id="quizProvider"><option value="">Automatic Failover</option></select>
+    <div id="quizSetup"></div>
+    <div id="quizRunner"></div>
+    <div id="quizResult"></div>
+    <div id="quizQuestion"></div>
+    <div id="quizOptions"></div>
+    <div id="quizQuestionNumber"></div>
+    <div id="quizProgressText"></div>
+    <div id="quizProgressFill"></div>
+    <div id="quizPreviousButton"></div>
+    <div id="quizNextButton"></div>
+    <div id="quizTopicLabel"></div>
+    <div id="quizScore"></div>
+    <div id="quizResultMessage"></div>
+    <div id="resultTotal"></div>
+    <div id="resultCorrect"></div>
+    <div id="resultWrong"></div>
+
+    <input id="pdfFile">
+    <span id="pdfFileName"></span>
+    <select id="pdfContentType"><option value="summary">Summary</option></select>
+    <select id="pdfDifficulty"><option value="medium">Medium</option></select>
+    <div id="pdfResult"></div>
+    <div id="pdfMeta"></div>
+
+    <textarea id="materialInput"></textarea>
+    <select id="materialType"><option value="summary">Summary</option></select>
+    <select id="materialDifficulty"><option value="medium">Medium</option></select>
+    <select id="materialCount"><option value="10">10</option></select>
+    <div id="materialResult"></div>
+    <div id="materialMeta"></div>
+</div>
+
+<div id="loadingOverlay" class="loading-overlay hidden">
+    <div class="loading-card">
+        <div class="loading-spinner"></div>
+        <strong id="loadingText">Thinking...</strong>
+    </div>
+</div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

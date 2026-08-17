@@ -1,0 +1,35 @@
+@"
+# Python virtual environments
+.venv/
+backend/.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+"@ | Set-Content .gitignore
+backend/data/providers.json
